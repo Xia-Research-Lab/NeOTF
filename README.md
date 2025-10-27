@@ -1,11 +1,16 @@
-# NeOTF
+# NeOTF: Neural representation to OTF for scattering imaging 
 
-![](https://arxiv.org/html/2507.22328v2/figures/algorithm-pipeline.png)
+![](./assets/algorithm-pipeline.png)
 
-run `NeOTF.py` to train and reconstruct images from multi-frame speckles
+# How to run
 
-* `num_mask/*.tif`: experimental speckles from number objects 
-* `NeOTF.py`: 
-* `config.yml`: config file of NeOTF training and pre-processing
-* `SIREN.py`: NeOTF model file
-* `utils.py`: utils function file
+* `NeOTF.py`: train and reconstruct images from default multi-frame speckles.
+
+![](./assets/results.png)
+
+* `SIREN.py`: files that define the neural network.
+
+* `utils.py`: files that define helper functions.
+
+* `config.yml`: parameter configuration file.
+

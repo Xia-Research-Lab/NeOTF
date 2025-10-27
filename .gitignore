@@ -1,3 +1,2 @@
-./__pycache__/
-./outputs/*
-./num_mask_white/*
+/__pycache__/
+/outputs/*

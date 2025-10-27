@@ -1,15 +1,5 @@
-experiment_name: "simu_cifar10_siren"
+experiment_name: "exp_data_num_mask"
 output_dir: "./outputs"
-
-simu_data:
-  source_img: "./cifar10"
-  speckle_format: "png"
-  source_size: 32
-  speckle_size: 256
-  seed: 3047
-  pupil_radius: 0.5
-  supp_size_w: 32
-  supp_size_h: 32
 
 data:
   path: "./num_mask"
@@ -35,8 +25,8 @@ model:
 
 
 training:
-  random_seed: true
-  seed: 5067
+  random_seed: false
+  seed: 2632
   device: "cuda"  # or "cpu"
   epochs: 5000
   optimizer: "Adam"  # or "SGD"
