@@ -3,8 +3,6 @@ import torch
 import torch.nn as nn
 from thop import profile
 
-# SIREN, fourier_encode, 和 SineLayer 类保持不变，这里省略以保持简洁
-# ... (您的 SIREN, fourier_encode, SineLayer 类的代码) ...
 class SIREN(nn.Module):
     def __init__(self, omega_0=30.0):
         super(SIREN, self).__init__()

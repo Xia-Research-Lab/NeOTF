@@ -1,43 +1,43 @@
-experiment_name: "exp_data_num_mask"
-output_dir: "./outputs"
+experiment_name: "exp_data_num_mask" # Name of the experiment
+output_dir: "./outputs" # Directory to save outputs
 
 data:
-  path: "./num_mask"
-  format: "tif"
-  ori_size: 2048
-  crop_size: 1024
-  desired_size: 512
-  blur_kernel_size: 21
-  sigma: 3.0
-  supp_size_w: 60
-  supp_size_h: 40
+  path: "./num_mask" # Path to the folder containing input images
+  format: "tif" # Image format: "png", "jpg", "jpeg", "tif", etc.
+  ori_size: 2048 # Original image size
+  crop_size: 1024 # Size to crop the image to
+  desired_size: 512 # Desired size after resizing
+  blur_kernel_size: 21 # Size of the Gaussian blur kernel
+  sigma: 3.0 # Standard deviation for Gaussian blur
+  supp_size_w: 60 # Support size width
+  supp_size_h: 40 # Support size height
 
 model:
-  type: "SIREN"
-  in_features: 2
-  hidden_layers: 2
-  hidden_features: 128
-  out_features: 1
-  first_omega_0: 30
-  hidden_omega_0: 30
-  outermost_linear: True
-  num_frequencies: 8
+  type: "SIREN" # Model type: "SIREN" or "MLP"
+  in_features: 2 # Input features (e.g., 2 for 2D coordinates)
+  hidden_layers: 2 # Number of hidden layers
+  hidden_features: 128 # Number of features in hidden layers
+  out_features: 1 # Output features (e.g., 1 for grayscale output)
+  first_omega_0: 30 # Omega_0 for the first layer
+  hidden_omega_0: 30 # Omega_0 for hidden layers
+  outermost_linear: True # Whether the outermost layer is linear (True/False)
+  num_frequencies: 8 # Number of frequencies for Fourier feature encoding
 
 
 training:
-  random_seed: false
-  seed: 2632
+  random_seed: false # Whether to use a random seed
+  seed: 2632  # Random seed value (if random_seed is false)
   device: "cuda"  # or "cpu"
-  epochs: 5000
+  epochs: 5000 
   optimizer: "Adam"  # or "SGD"
   lr: !!float 1e-4
   loss: "L1"  # or "MSE"
-  center_sample: false
+  center_sample: false # Whether to use center sampling
   center_sample_radius: 0.5
-  random_sample: false
+  random_sample: false # Whether to use random sampling
   random_sample_ratio: 0.1
 
-  tv_regularization: false
+  tv_regularization: false # Whether to use TV regularization
   tv_weight: !!float 1e-4
 
-  num_frames: 5
+  num_frames: 5 # Number of frames for optimize model

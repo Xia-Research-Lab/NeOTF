@@ -142,9 +142,6 @@ def test(config,config_path):
 
         losses.append(loss.item())
 
-        # NEW: Instead of the old 'if' statement for printing,
-        # update the progress bar's postfix with the current loss.
-        # Formatting the loss to a fixed precision (e.g., .6f) prevents the progress bar from resizing.
         epoch_pbar.set_postfix(loss=f"{loss.item():.6f}")
 
     # The loop is finished, the progress bar will automatically close.
@@ -164,11 +161,6 @@ def test(config,config_path):
         outputs = phase_map.view(size, size)
     else:
         outputs = out.view(size, size)
-    
-    # outputs = outputs.view(sample_size, sample_size)
-    # if sample_size < sidelen:
-    #     outputs = pad_to_size(outputs, sidelen, sidelen, mode='constant', value=0.0)
-
 
     for i in range(len(speckle_torch_list)):
         obj_pha = speckle_pha[i] - outputs
@@ -194,6 +186,5 @@ if __name__ == "__main__":
                         help='Path to the YAML configuration file.')
     args = parser.parse_args()
 
-    # 加载配置
     config = load_config(args.config)
     test(config, args.config)

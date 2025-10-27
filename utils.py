@@ -161,12 +161,11 @@ def load_image_array(image_path, zoom=1):
 
     img = Image.open(image_path)
 
-    gray_img = img.convert('L')  # 转换为灰度图
+    gray_img = img.convert('L')
 
-    new_size = gray_img.size*zoom  # 例如 (800, 600)
+    new_size = gray_img.size*zoom
     gray_img = gray_img.resize(new_size)
 
-    # 将图像转换为 NumPy 数组
     gray_img = np.array(gray_img)
     gray_img = (gray_img - np.min(gray_img)) / (np.max(gray_img) - np.min(gray_img)) * 255.0
 
@@ -175,56 +174,6 @@ def load_image_array(image_path, zoom=1):
     gray_img_copy.save(image_path)
 
     return gray_img
-
-def scattering_speckle(png_files, random_phase, config):
-
-    image = load_image_array(png_files)
-
-    image_sidelen = image.shape[0]
-    pad_size = (config.speckle_size - image_sidelen) // 2
-    image_pad = np.pad(image, (pad_size, pad_size), constant_values=0)
-    size = config.speckle_size
-
-    matrix = np.zeros((size, size))
-    # 创建圆形区域
-    center = (size // 2, size // 2)  # 中心点
-    radius = int(config.speckle_size/2 * config.pupil_radius)  # 半径
-
-    for x in range(size):
-        for y in range(size):
-            if (x - center[0]) ** 2 + (y - center[1]) ** 2 <= radius ** 2:
-                matrix[x, y] = 1
-
-    # 计算复数矩阵
-    complex_matrix = np.fft.ifftshift(matrix * np.exp(1j * random_phase))
-
-    # 计算傅里叶变换
-    fft_result = np.fft.ifft2(complex_matrix)
-
-    # with random phase
-    speckle_psf = np.abs(fft_result) ** 2
-    speckle_psf = (speckle_psf-np.min(speckle_psf))/(np.max(speckle_psf)-np.min(speckle_psf))
-
-    speckle = simu_memory_effect(image_pad,speckle_psf)
-
-    # without random phase
-    diffraction_psf = np.abs(np.fft.ifft2(np.fft.ifftshift(matrix))) ** 2
-    diffraction_image = simu_memory_effect(image_pad, diffraction_psf)
-    diffraction_image = crop_center(diffraction_image,image_sidelen)
-
-    return speckle, speckle_psf, image, diffraction_image
-
-def simu_memory_effect(image,psf):
-
-    F_matrix1 = np.fft.fft2(image)
-    F_matrix2 = np.fft.fft2(psf)
-    F_convolution = F_matrix1 * F_matrix2
-    convolution_result = np.fft.ifft2(F_convolution)
-    speckle = np.abs(convolution_result)**2
-    speckle = speckle - speckle.min()
-    speckle = speckle / speckle.max()
-
-    return speckle
 
 def crop_center(image, crop_size):
 
