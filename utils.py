@@ -10,6 +10,8 @@ import yaml
 from datetime import datetime
 import random
 
+from scipy.ndimage import rotate
+
 def set_seed(seed):
     random.seed(seed)
     
@@ -48,31 +50,6 @@ def load_config(path='config.yml'):
     
     config = Config(config_dict)
     return config
-
-def total_variation_loss(image, mode='isotropic', reduction='sum'):
-
-    if image.dim() != 4:
-        raise ValueError("Expected a 4D tensor (B, C, H, W).")
-
-    # Calculate gradients
-    grad_y = image[..., 1:, :] - image[..., :-1, :]
-    grad_x = image[..., :, 1:] - image[..., :, :-1]
-
-    if mode == 'isotropic':
-        # Add a small epsilon for numerical stability
-        eps = 1e-6
-        tv_loss = torch.sqrt(grad_y[..., :, :-1]**2 + grad_x[..., :-1, :]**2 + eps)
-    elif mode == 'anisotropic':
-        tv_loss = torch.abs(grad_y).sum() + torch.abs(grad_x).sum()
-    else:
-        raise ValueError(f"Unknown mode: {mode}.")
-    
-    if reduction == 'sum':
-        return tv_loss.sum()
-    elif reduction == 'mean':
-        return tv_loss.mean()
-    else:
-        raise ValueError(f"Unknown reduction: {reduction}.")
     
 def get_mgrid(sidelen, dim=2):
 
@@ -80,6 +57,26 @@ def get_mgrid(sidelen, dim=2):
     mgrid = torch.stack(torch.meshgrid(*tensors, indexing="ij"), dim=-1)
     mgrid = mgrid.reshape(-1, dim)
     return mgrid
+
+def get_mgrid_hermitian(sidelen, dim=2):
+
+    if dim != 2:
+        raise ValueError("This function is designed for dim=2")
+    
+    half_sidelen = sidelen // 2 + 1
+    tensors = (torch.linspace(0, 1, steps=half_sidelen),
+               torch.linspace(-1, 1, steps=sidelen))
+    
+    hermitian_grid = torch.stack(torch.meshgrid(*tensors, indexing="ij"), dim=-1)
+    hermitian_grid = hermitian_grid.reshape(-1, dim)
+    
+    y_indices, x_indices = torch.meshgrid(torch.arange(sidelen), torch.arange(sidelen), indexing="ij")
+
+    mask_2d = y_indices <= sidelen // 2
+    
+    mask = mask_2d.reshape(-1)
+
+    return hermitian_grid, mask
 
 def get_circular_mgrid(sidelen, radius):
 
@@ -93,30 +90,38 @@ def get_circular_mgrid(sidelen, radius):
 
     return circular_grid, mask
 
+def get_circular_mgrid_hermitian(sidelen, radius, dim=2):
+    """
+    Generates a grid of coordinates within a circular region of the 
+    non-redundant half of a Fourier plane (exploiting Hermitian symmetry).
+    This is the corrected version.
 
-def pad_to_size(input_tensor, target_height, target_width, mode='constant', value=0):
+    Args:
+        sidelen (int): The side length of the full square grid.
+        radius (float): The radius of the circular sampling region in normalized 
+                        coordinates (from 0 to sqrt(2)).
+        dim (int): The dimension of the grid (should be 2).
 
-    input_height = input_tensor.size(-2)
-    input_width = input_tensor.size(-1)
+    Returns:
+        torch.Tensor: A tensor of shape [num_coords, 2] containing the unique coordinates.
+        torch.Tensor: A 1D boolean tensor of shape [sidelen*sidelen] that can be used 
+                      to index into a flattened full grid.
+    """
+    full_grid = get_mgrid(sidelen, dim=2)
 
-    if target_height < input_height or target_width < input_width:
-        raise ValueError("size mismatch: target size must be greater than or equal to input size.")
+    dist_sq = torch.sum(full_grid**2, dim=1)
+    circular_mask = dist_sq <= radius**2
 
-    total_pad_h = target_height - input_height
-    total_pad_w = target_width - input_width
+    y_indices, x_indices = torch.meshgrid(torch.arange(sidelen), torch.arange(sidelen), indexing="ij")
+    hermitian_mask_2d = y_indices <= sidelen // 2
+    hermitian_mask = hermitian_mask_2d.reshape(-1)
 
+    final_mask = circular_mask & hermitian_mask
 
-    pad_top = total_pad_h // 2
-    pad_bottom = total_pad_h - pad_top
-    
-    pad_left = total_pad_w // 2
-    pad_right = total_pad_w - pad_left
+    final_grid = full_grid[final_mask]
 
-    padding = (pad_left, pad_right, pad_top, pad_bottom)
+    return final_grid, final_mask
 
-    padded_tensor = F.pad(input_tensor, padding, mode=mode, value=value)
-    
-    return padded_tensor
 
 def read_speckles_from_folder(folder_path, data_config):
     image_array_list = []
@@ -132,23 +137,11 @@ def read_speckles_from_folder(folder_path, data_config):
                 image_array = np.array(img)
                 image_array = image_array.astype(np.float32)
 
-                crop_size = data_config.crop_size
-
-                start_row = (image_array.shape[0] - crop_size) // 2
-                end_row = start_row + crop_size
-                start_col = (image_array.shape[1] - crop_size) // 2
-                end_col = start_col + crop_size
-
-                image_array = image_array[start_row:end_row, start_col:end_col]
-
-                min_value = image_array.min()
-                max_value = image_array.max()
-
-                image_array = (image_array - min_value) / (max_value - min_value)
-
-                image_array = cv2.GaussianBlur(image_array, (data_config.blur_kernel_size, data_config.blur_kernel_size), data_config.sigma)
-    
-                image_array = zoom(image_array, zoom=data_config.desired_size /data_config.crop_size)
+                # If loading from preprocessed TIFF (uint16 format), convert back to [0,1]
+                if data_config.format == 'tif' and image_array.max() > 1:
+                    # Assuming uint16 range [0, 65535]
+                    image_array = image_array / 65535.0
+                #image_array = image_array-np.mean(image_array)
                 image_torch = torch.from_numpy(image_array)
                 image_torch = image_torch.unsqueeze(0).unsqueeze(0)
 
@@ -157,28 +150,28 @@ def read_speckles_from_folder(folder_path, data_config):
 
     return image_array_list, image_torch_list
 
-def load_image_array(image_path, zoom=1):
-
-    img = Image.open(image_path)
-
-    gray_img = img.convert('L')
-
-    new_size = gray_img.size*zoom
-    gray_img = gray_img.resize(new_size)
-
-    gray_img = np.array(gray_img)
-    gray_img = (gray_img - np.min(gray_img)) / (np.max(gray_img) - np.min(gray_img)) * 255.0
 
 
-    gray_img_copy = Image.fromarray(gray_img.astype(np.uint8))
-    gray_img_copy.save(image_path)
+def crop_center(image, crop_size_h,crop_size_w=None):
 
-    return gray_img
+    h = image.shape[0]
+    w = image.shape[1]
 
-def crop_center(image, crop_size):
+    if crop_size_w is None:
+        crop_size_w = crop_size_h
+    start_h = (h-crop_size_h)//2
+    start_w = (w-crop_size_w)//2
 
-    sidelen = image.shape[0]
+    return image[start_h:start_h+crop_size_h,start_w:start_w+crop_size_w]
 
-    start = (sidelen-crop_size)//2
+from scipy.fft import fft2, ifft2, fftshift, ifftshift
 
-    return image[start:start+crop_size,start:start+crop_size]
+
+
+
+def total_variation_loss(img):
+
+    h_tv = torch.sum(torch.abs(img[:, :, 1:, :] - img[:, :, :-1, :]))
+    w_tv = torch.sum(torch.abs(img[:, :, :, 1:] - img[:, :, :, :-1]))
+    
+    return h_tv + w_tv

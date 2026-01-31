@@ -4,13 +4,17 @@
 
 # How to run
 
-* `NeOTF.py`: train and reconstruct images from default multi-frame speckles.
+`python NeOTF.py --config ./config.yml`: train and reconstruct images from default multi-frame speckles.
 
 ![](./assets/results.png)
+
+# Others 
 
 * `SIREN.py`: files that define the neural network.
 
 * `utils.py`: files that define helper functions.
 
 * `config.yml`: parameter configuration file.
+
+
 
