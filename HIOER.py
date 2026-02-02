@@ -51,6 +51,7 @@ def HIO_ER(speckle, num_hio=800, num_er=200, sup_size=(60, 40), use_gpu=False, b
         mat2[start_index_h:end_index_h, start_index_w:end_index_w] = 1
 
         ac_speckle = (ac_speckle - np.min(ac_speckle)) / (np.max(ac_speckle) - np.min(ac_speckle) + 1e-12)
+        ac_speckle = ac_speckle - np.mean(ac_speckle)
         speckle_ft = np.sqrt(np.abs(np.fft.fft2(ac_speckle)))
 
         # Initial guess
@@ -94,6 +95,7 @@ def HIO_ER(speckle, num_hio=800, num_er=200, sup_size=(60, 40), use_gpu=False, b
     mat2[start_index_h:end_index_h, start_index_w:end_index_w] = 1.0
 
     ac_speckle = (ac_speckle - torch.min(ac_speckle)) / (torch.max(ac_speckle) - torch.min(ac_speckle) + 1e-12)
+    ac_speckle = ac_speckle - torch.mean(ac_speckle)
     speckle_ft = torch.sqrt(torch.abs(torch.fft.fft2(ac_speckle)))
 
     # Initial guess
