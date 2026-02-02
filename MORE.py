@@ -31,8 +31,6 @@ def MORE(speckle_list, num_epoch=50, sup_size=(50, 50), use_gpu=False):
 
         for speckle in speckle_list:
             FFT = np.fft.fft2(speckle)
-            FFT[1,1] = FFT[2,2]
-            FFT[0, 0]=FFT[1,1]
             FFT_shift = np.fft.fftshift(FFT)
             mag = np.abs(FFT_shift)
             mean_mag = np.mean(mag)
@@ -77,8 +75,6 @@ def MORE(speckle_list, num_epoch=50, sup_size=(50, 50), use_gpu=False):
         s_arr = torch.from_numpy(speckle).to(dtype=torch.float32, device=device)
         FFT = torch.fft.fft2(s_arr)
 
-        # reduce the zero-frequency
-        # FFT[0, 0] = FFT[1, 1]
         FFT_shift = torch.fft.fftshift(FFT)
         mag = torch.abs(FFT_shift)
 
