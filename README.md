@@ -1,4 +1,5 @@
 # NeOTF: Neural representation to OTF for scattering imaging 
+[![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/Xia-Research-Lab/NeOTF/blob/main/NeOTF_colab_demo.ipynb)
 
 ![](./assets/algorithm-pipeline.png)
 
