@@ -66,11 +66,15 @@ Run all baseline methods (HIO+ER, MORE) alongside NeOTF:
 ```bash
 bash run_main.sh --config config.yml --output_dir ./outputs
 ```
+
+## 📷 Results
+
+Mutliframe images are reconstructed from inverse filtering with the static OTF retrieved within NeOTF training. The NeOTF is visualized as below. 
+
 <p align="center">
   <img src="./assets/results.png" width="100%" alt="results">
 </p>
-## 📷 Results
-![results](./assets/results.png)
+<p align="center"></p>
 
 ## 🧩 Repository Structure
 * `NeOTF.py`: Main NeOTF training and reconstruction pipeline.
