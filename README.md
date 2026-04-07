@@ -26,7 +26,7 @@
   <a href="https://colab.research.google.com/github/Xia-Research-Lab/NeOTF/blob/main/NeOTF_colab_demo.ipynb"><img src="https://img.shields.io/badge/Google%20Colab-Demo-F9AB00?style=for-the-badge&logo=google-colab&logoColor=white" alt="Google Colab"></a>
 </p>
 
-#### 🚩Accepted by Advanced Photonics
+#### 🚩Accepted by *Advanced Photonics 2026*
 
 ## 🔥 News
 - [2026.04] 🎉🎉🎉 Congratulations! NeOTF has been accepted by **Advanced Photonics**.
@@ -67,7 +67,7 @@ Run all baseline methods (HIO+ER, MORE) alongside NeOTF:
 bash run_main.sh --config config.yml --output_dir ./outputs
 ```
 <p align="center">
-  <img src="./assets/results.png" width="70%" alt="results">
+  <img src="./assets/results.png" width="100%" alt="results">
 </p>
 ## 📷 Results
 ![results](./assets/results.png)
