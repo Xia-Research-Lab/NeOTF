@@ -35,7 +35,7 @@
 
 ## 🎬 Overview
 <p align="center">
-  <img src="./assets/algorithm-pipeline.png" width="70%" alt="overview">
+  <img src="./assets/overview.jpg" width="70%" alt="overview">
 </p>
 
 NeOTF is a guidestar-free OTF retrieval method for imaging through dynamic scattering media. By optimizing a neural representation with only a few speckle images from unknown objects, NeOTF robustly retrieves the system's OTF without a guidestar.
@@ -72,7 +72,7 @@ bash run_main.sh --config config.yml --output_dir ./outputs
 Mutliframe images are reconstructed from inverse filtering with the static OTF retrieved within NeOTF training. The NeOTF is visualized as below. 
 
 <p align="center">
-  <img src="./assets/results.png" width="100%" alt="results">
+  <img src="./assets/results.jpg" width="100%" alt="results">
 </p>
 <p align="center"></p>
 
