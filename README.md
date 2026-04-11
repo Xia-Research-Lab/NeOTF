@@ -35,7 +35,7 @@
 
 ## 🎬 Overview
 <p align="center">
-  <img src="./assets/overview.jpg" width="70%" alt="overview">
+  <img src="./assets/overview.jpg" width="85%" alt="overview">
 </p>
 
 NeOTF is a guidestar-free OTF retrieval method for imaging through dynamic scattering media. By optimizing a neural representation with only a few speckle images from unknown objects, NeOTF robustly retrieves the system's OTF without a guidestar.
